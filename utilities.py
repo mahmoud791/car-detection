@@ -21,3 +21,49 @@ def data_look(car_list, notcar_list):
     data_dict["data_type"] = car_img.dtype
     # Return data_dict
     return data_dict
+
+
+
+    """def visualize_images(input_images, num_cols, figure_name, cmap = None):
+    "Shows input images by stacking them in num_cols columns"
+    fig, axes = plt.subplots((int)((len(input_images) + 1) /num_cols), num_cols, figsize=(24, 20))
+
+    fig = plt.gcf()
+    fig.canvas.set_window_title(figure_name)
+    
+    print(figure_name)
+    
+    for ax, image in zip(axes.flat, input_images):
+        if(cmap == "gray" or cmap == 'hot'):
+            ax.imshow(image, cmap=cmap)
+        elif(image.shape[2]==1):
+            ax.imshow(image[:,:,0], cmap = cmap)
+        else:
+            ax.imshow(image, cmap=cmap)
+
+    plt.show()"""
+
+
+
+def convert_color(img, conv):
+    return cv2.cvtColor(img, cv2.COLOR_RGB2YUV)
+
+
+
+
+def get_hog_features(img, orient, pix_per_cell, cell_per_block, 
+                        vis=False, feature_vec=True):
+    """
+    Return the hog features of the given input image
+    Call with two outputs if vis==True"""
+    if vis == True:
+        features, hog_image = hog(img, orientations=orient, pixels_per_cell=(pix_per_cell, pix_per_cell),
+                                  cells_per_block=(cell_per_block, cell_per_block), transform_sqrt=True, 
+                                  visualize=vis, feature_vector=feature_vec)
+        return features, hog_image
+    # Otherwise call with one output
+    else:      
+        features = hog(img, orientations=orient, pixels_per_cell=(pix_per_cell, pix_per_cell),
+                       cells_per_block=(cell_per_block, cell_per_block), transform_sqrt=True, 
+                       visualize=vis, feature_vector=feature_vec)
+        return features
