@@ -71,3 +71,78 @@ notcar_features, notcar_hog_image = get_hog_features(cv2.cvtColor(notcar_images[
                         vis=True, feature_vec=True)
 
 print("end hog")
+
+colorspace = 'YUV' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
+orient = 9
+pix_per_cell = 8
+cell_per_block = 2
+hog_channel = 'ALL' # Can be 0, 1, 2, or "ALL"
+spatial_size=(32, 32)
+hist_bins=32
+
+print("start extract")
+
+
+
+car_features = extract_features(cars, cspace=colorspace, orient=orient, 
+                        pix_per_cell=pix_per_cell, cell_per_block=cell_per_block, 
+                        hog_channel=hog_channel, hist_bins=hist_bins)
+notcar_features = extract_features(notcars, cspace=colorspace, orient=orient, 
+                        pix_per_cell=pix_per_cell, cell_per_block=cell_per_block, 
+                        hog_channel=hog_channel, hist_bins=hist_bins)
+
+print("end extract")
+
+# Create an array stack of feature vectors
+X = np.vstack((car_features, notcar_features)).astype(np.float64) 
+
+print("start standard")
+
+# Fit a per-column scaler
+X_scaler = StandardScaler().fit(X)
+# Apply the scaler to X
+scaled_X = X_scaler.transform(X)
+
+print("end standard")
+
+# Define the labels vector
+y = np.hstack((np.ones(len(car_features)), np.zeros(len(notcar_features))))
+
+
+
+# Split up data into randomized training and test sets
+rand_state = np.random.randint(0, 100)
+X_train, X_test, y_train, y_test = train_test_split(
+    scaled_X, y, test_size=0.15, random_state=rand_state)
+
+print("start train")
+# Use a linear SVC X_scaler
+svc = LinearSVC()
+t=time.time()
+svc.fit(X_train, y_train)
+
+print("end train")
+print("start saving model")
+import pickle
+
+#Pickle the data as it takes a lot of time to generate it
+
+import os
+data_file = '../svc_pickle.p'
+
+if not os.path.isfile(data_file):
+    with open(data_file, 'wb') as pfile:
+        pickle.dump(
+            {
+                'svc': svc,
+                'scaler': X_scaler,
+                'orient': orient,
+                'pix_per_cell': pix_per_cell,
+                'cell_per_block': cell_per_block,
+                'spatial_size': spatial_size,
+                'hist_bins': hist_bins
+
+            },
+            pfile, pickle.HIGHEST_PROTOCOL)
+
+print('Data saved in pickle file')
